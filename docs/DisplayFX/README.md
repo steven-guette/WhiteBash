@@ -122,6 +122,8 @@ DisplayFX_print "Ceci est un texte centré." 1 1 center
 DisplayFX_print_wrapped "Un très long texte qui sera coupé automatiquement selon la longeur maximale qui a été définie" 50 center
 ```
 
+![Exemple d'exécution](../assets/DisplayFX/example_full.png)
+
 ## 📦 **Personnalisation des messages**
 Les couleurs des types de messages (error, warning, etc.) sont configurées dans la variable DISPLAYFX_MESSAGE_COLORS. 
 
