@@ -43,9 +43,7 @@ Chroma_coloration() {
     local -r text="$1"
     local -r foreground=$2
     local -r background=$3
-
-    local ansi_code
-    ansi_code="$(Chroma_get_compiled_color_code "$foreground" "$background")"
+    local -r ansi_code=$(Chroma_get_compiled_color_code "$foreground" "$background")
 
     # Formate le texte avec les couleurs
     echo -e "$(Chroma_get_formatted_string "$text" "$ansi_code")"
