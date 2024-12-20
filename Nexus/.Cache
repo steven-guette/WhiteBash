@@ -1,0 +1,97 @@
+#!/bin/bash
+
+# Définition du chemin racine de .Cache
+CACHE_ROOTPATH=$(readlink -f "$(dirname "${BASH_SOURCE[0]}")")
+readonly CACHE_ROOTPATH
+
+# Répertoire où les fichiers de cache seront stockés
+readonly CACHE_DIR="$CACHE_ROOTPATH/cache"
+
+# Chemin complet du fichier cache (sera défini dans Cache_init)
+declare CACHE_FILEPATH
+
+# Tableau associatif pour stocker les données du cache en mémoire
+declare -A CACHE_FILE_DATA
+
+#===============================
+# Vérifie si le cache est à jour
+# Usage : Cache_is_up_to_date "element1" "element2" ...
+# Retour : 0 (cache valide) ou 1 (cache invalide)
+#================================================
+Cache_is_up_to_date() {
+    local -ra nexus_data=("$@")
+    local cache_status=0
+
+    # Vérifie si le fichier cache existe et que la taille correspond aux données fournies
+    if [ -f "$CACHE_FILEPATH" ] && [ "${#nexus_data[@]}" -eq "${#CACHE_FILE_DATA[@]}" ]; then
+        for element in "${nexus_data[@]}"; do
+            # Vérifie si chaque élément est bien présent dans les données en mémoire
+            if [ -z "${CACHE_FILE_DATA[$element]}" ]; then
+                cache_status=1
+                break
+            fi
+        done
+    else
+        cache_status=1
+    fi
+
+    # Si le cache est invalide, il est mis à jour
+    [ "$cache_status" -eq 1 ] && Cache_update "${nexus_data[@]}"
+    return $cache_status
+}
+
+#==============================================
+# Initialise le système de cache et ses données
+# Usage : Cache_init "nom_du_fichier_cache"
+#==========================================
+Cache_init() {
+    CACHE_FILEPATH="$CACHE_DIR/$1.cache"
+    readonly CACHE_FILEPATH
+
+    Cache_set_dir
+    Cache_set_file_data
+}
+
+# Met à jour le fichier cache avec les nouvelles données
+Cache_update() {
+    local -ra new_data=("$@")
+    if [ "${#new_data[@]}" -gt 0 ]; then
+        Cache_set_file
+        printf "%s\n" "${new_data[@]}" > "$CACHE_FILEPATH"
+    fi
+}
+
+# Crée le répertoire cache s'il n'existe pas
+Cache_set_dir() { [ ! -d "$CACHE_DIR" ] && mkdir -p "$CACHE_DIR" && chmod 750 "$CACHE_DIR"; }
+
+# Crée le fichier cache s'il n'existe pas
+Cache_set_file() { [ ! -f "$CACHE_FILEPATH" ] && truncate -s0 "$CACHE_FILEPATH" && chmod 600 "$CACHE_FILEPATH"; }
+
+# Charge les données du fichier cache en mémoire
+Cache_set_file_data() {
+    if [ -f "$CACHE_FILEPATH" ]; then
+        while IFS= read -r line; do
+            [ -n "$line" ] && CACHE_FILE_DATA["$line"]=1
+        done < "$CACHE_FILEPATH"
+    fi
+}
+
+# Retourne les données contenues dans le fichier cache
+Cache_get_data() { echo "${!CACHE_FILE_DATA[@]}"; }
+
+#================================================
+# Permet l'exécution du script avec des arguments
+# L'objectif est de pouvoir effectuer des actions spontanées sur le cache
+#========================================================================
+if [ "$#" -gt 0 ]; then
+    if [ "$1" = "--clear" ] && [ -d "$CACHE_DIR" ]; then
+        echo "Vous êtes sur le point de vider le contenu de $CACHE_DIR !"
+        read -rp "Validez l'action en saisissant CLEAR : " clear_confirm
+
+        if [ "${clear_confirm^^}" = CLEAR ]; then
+            echo; rm -fv "$CACHE_DIR"/*
+        else
+            echo -e "\nSuppression des fichiers cache annulée."
+        fi
+    fi
+fi

@@ -1,0 +1,86 @@
+#!/bin/bash
+
+# Définition du chemin racine de .Logger
+LOGGER_ROOTPATH=$(readlink -f "$(dirname "${BASH_SOURCE[0]}")")
+readonly LOGGER_ROOTPATH
+
+# Répertoire et chemin du fichier de log
+readonly LOGGER_DIR="$LOGGER_ROOTPATH/logs"
+readonly LOGGER_FILEPATH="$LOGGER_DIR/Nexus.log"
+
+# Taille maximale du fichier de log (5 Mo)
+readonly LOGGER_MAX_FILE_SIZE=5242880
+
+# Vérifie la taille du fichier log et le compresse s'il dépasse la limite
+Logger_check_file_size() {
+    if [ -f "$LOGGER_FILEPATH" ] && [ "$(Logger_get_file_size)" -ge "$LOGGER_MAX_FILE_SIZE" ]; then
+        tar --remove-files -cpaf "${LOGGER_FILEPATH%.log}.tar.gz" -C "$LOGGER_DIR" "$(basename "$LOGGER_FILEPATH")" &> /dev/null
+    fi
+}
+
+# Initialise le répertoire et le fichier de log
+Logger_init() {
+    Logger_set_dir
+    Logger_set_file
+}
+
+#==============================================================================================
+# Permet d'écrire plusieurs lignes dans le fichier log avec un affichage adapté de l'horodatage
+# Usage : Logger_write_several_lines "Texte\ndu\nlog"
+#====================================================
+Logger_write_several_lines() {
+    local -r log=$1
+    [ -n "$log" ] && echo -e "========== $(Logger_get_timestamp) ==========\n$log" >> "$LOGGER_FILEPATH"
+}
+
+#===========================================================
+# Écrit une ligne simple dans le fichier log avec horodatage
+# Usage : Logger_write_simple_line "Texte du log"
+#================================================
+Logger_write_simple_line() {
+    local -r log=$1
+    [ -n "$log" ] && echo -e "[$(Logger_get_timestamp)] $log" >> "$LOGGER_FILEPATH"
+}
+
+#=================================================
+# Affiche un message avec le texte coloré en rouge
+# Usage : Logger_display_error "Message"
+#=======================================
+Logger_display_error() { echo -e "\033[0;31m$1\033[0m"; }
+
+#================================================
+# Affiche un message avec le texte coloré en cyan
+# Usage : Logger_display_infos "Message"
+#=======================================
+Logger_display_infos() { echo -e "\033[0;36m$1\033[0m"; }
+
+#==================================================
+# Affiche un message avec le texte coloré en violet
+# Usage : Logger_display_links "Message"
+#=======================================
+Logger_display_links() { echo -e "\033[0;35m$1\033[0m"; }
+
+# Crée le répertoire des logs s'il n'existe pas
+Logger_set_dir() { [ ! -d "$LOGGER_DIR" ] && mkdir -p "$LOGGER_DIR" && chmod 750 "$LOGGER_DIR"; }
+
+#==========================
+# Prépare le fichier de log
+# - Vérifie la taille et compresse si nécessaire
+# - Crée un fichier vide s'il n'existe pas
+#=========================================
+Logger_set_file() {
+    Logger_check_file_size
+    if [ ! -f "$LOGGER_FILEPATH" ]; then
+        truncate -s0 "$LOGGER_FILEPATH"
+        chmod 640 "$LOGGER_FILEPATH"
+    fi
+}
+
+# Retourne un timestamp formaté
+Logger_get_timestamp() { date "+%d-%m-%Y ~ %H:%M"; }
+
+# Retourne la taille du fichier de log
+Logger_get_file_size() { stat --format=%s "$LOGGER_FILEPATH"; }
+
+# Retourne le chemin complet vers le fichier de log
+Logger_get_filepath() { echo "$LOGGER_FILEPATH"; }
