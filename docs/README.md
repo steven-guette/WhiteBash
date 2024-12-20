@@ -4,7 +4,7 @@
 ---
 
 ## 🔍 **Qu'est-ce que WhiteBash ?**
-WhiteBash est un framework en **Bash** conçu pour éviter de "réinventer la roue". Il fournit des **modules indépendants et réutilisables** pour automatiser des tâches récurrentes.
+WhiteBash est un framework en **Bash** conçu pour éviter de "réinventer la roue". Il fournit des **modules réutilisables** pour automatiser des tâches récurrentes.
 
 Plutôt que de ressaisir du code générique (gestion du texte, chaînes de caractères, terminal, etc.), **WhiteBash** vous permet d’appeler des fonctions prêtes à l’emploi pour vous concentrer uniquement sur la logique de votre script principal.
 
@@ -23,7 +23,7 @@ Plutôt que de ressaisir du code générique (gestion du texte, chaînes de cara
 |-------------------|----------------------------------------------------------------------------------------------|
 | `Chroma`          | Gère le formatage du texte avec les codes ANSI.                                              |
 | `DisplayFX`       | Affiche du texte stylisé, des titres, des bannières.                                         |
-| `FrameGen`        | Génère des titres encadrés et des séparateurs horizontaux. À terme : tableaux de données.    |
+| `FrameGen`        | Génère des titres encadrés et des séparateurs horizontaux.                                   |
 | `StrOps`          | Applique des modifications sur des chaînes de caractères.                                    |
 | `TermCTRL`        | Contrôle avancé du terminal : retourne la largeur, vérifie des seuils, et génère des ratios. |
 | `WShield`         | Dispose de fonctions pour vérifier du contenu.                                               |

@@ -17,6 +17,10 @@ readonly NEXUS_DEBUG
 readonly NEXUS_CALLED_BY
 readonly NEXUS_ROOTPATH
 
+# Importation des dépendances internes
+. "$NEXUS_ROOTPATH/.Logger"
+. "$NEXUS_ROOTPATH/.Cache"
+
 # Vérifie si le script est exécuté directement sans passer par le debug mode
 if [ -z "$NEXUS_CALLED_BY" ]; then
     log_msg=(
@@ -39,10 +43,6 @@ declare -A NEXUS_REQUIRED_MODULES       # Modules requis
 declare -a NEXUS_MISSING_MODULES        # Modules manquants
 declare -a NEXUS_MODULES_USED           # Modules qui seront utilisés
 declare -a NEXUS_LOADING_ORDER          # Ordre de chargement des modules
-
-# Importation des dépendances internes
-. "$NEXUS_ROOTPATH/.Logger"
-. "$NEXUS_ROOTPATH/.Cache"
 
 Logger_init
 Cache_init "$NEXUS_CALLED_BY"
